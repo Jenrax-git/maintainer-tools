@@ -14,7 +14,15 @@ WEBSITE_KEY_RE = re.compile(r"""(["']website["']\s*:\s*["'])([^"']*)(["'])""")
 @click.argument("url")
 @click.option("--addons-dir", default=".")
 def main(url, addons_dir):
+    self_addon = False
+    if addons_dir == "self":
+        addons_dir = ".."
+        self_addon = True
+        
     for addon_dir in os.listdir(addons_dir):
+        if self_addon and addon_dir != os.path.basename(os.getcwd()):
+            continue
+        
         manifest_path = get_manifest_path(os.path.join(addons_dir, addon_dir))
         if not manifest_path:
             continue
