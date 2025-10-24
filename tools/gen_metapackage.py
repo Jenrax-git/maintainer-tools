@@ -4,6 +4,7 @@
 import datetime
 import re
 import sys
+import os
 from pathlib import Path
 from typing import Any, List, Optional
 
@@ -36,12 +37,23 @@ classifiers=[
 def _gen_metapackage(addons_dir: Path, name: str):
     meta_install_requires = []
     odoo_series_detected = set()
+    
+    self_addon = False
+    
+    if addons_dir == "self":
+        addons_dir = Path("..")
+        self_addon = True
+        
     metapackage_path = addons_dir / METAPACKAGE_PATH
     pyproject_toml_path = metapackage_path / "pyproject.toml"
 
     for addon_dir in addons_dir.iterdir():
         if not is_addon_dir(addon_dir):
             continue
+        
+        if self_addon and addon_dir != os.path.basename(os.getcwd()):
+            continue
+        
         addon = Addon.from_addon_dir(addon_dir)
         odoo_series = detect_odoo_series_from_addon_version(addon.manifest.version)
         if not odoo_series:
